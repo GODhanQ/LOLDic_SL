@@ -1,7 +1,17 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
+#define NOMINMAX
+#include <Windows.h>
 using namespace std;
+
+const WORD COLOR_DEFAULT{ 0x07 };
+const WORD COLOR_YELLOW{ 0x0E };
+static void setConsoleColor(WORD color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
 
 struct Node
 {
@@ -14,7 +24,10 @@ struct Node
     ~Node() {}
 
     void display() const {
-        std::cout << "Name: " << name << " | "
+        setConsoleColor(COLOR_YELLOW);
+        cout << "Name: ";
+        setConsoleColor(COLOR_DEFAULT);
+        cout << name << " | "
             << "HP: " << hp << " | "
             << "MP: " << mp << " | "
             << "Speed: " << speed << " | "
@@ -22,7 +35,6 @@ struct Node
             << "Position: " << position << "\n";
     }
 };
-
 class LinkedList
 {
     Node* head;
@@ -133,8 +145,9 @@ private:
             }
             tail = tail->next;
         }
+        // left나 right 둘중 하나가 nullptr이 된다면 남아있는 한 쪽은 이미 정렬된 일부분이기에 추가적 조작이 필요 없음.
 
-        if (left) {
+        if (left) {     // left가 nullptr이 아니라면. = 남아있는 부분이라면.
             tail->next = left;
         }
         if (right) {
@@ -147,15 +160,15 @@ private:
 };
 
 void InSertTestData();
-void ShowMenu();
 int ExcuteCommand(int CommandNum);
 
+void ShowMenu();
 static Node* Search_SL(const string name);
 static void InSert_SL(const string name, int hp, int mp, int speed, int range, const string position);
 static int Delete_SL(const string name);
 static int DeleteAll_SL(const string pos);
 static void PrintAll_SL();
-static Node* FindMaxHp_SL();
+static void FindMaxHp_SL();
 static void SortByHp_SL(int start, int end);
 
 constexpr int Capacity{ 200 };
@@ -163,7 +176,6 @@ LinkedList LOLDic;
 
 int main()
 {
-    
     cout << "이 코드는 사전 데이터를 ifstream으로 입력받습니다.\n";
     cout << "리소스 파일에 testdata.txt를 넣어주세요.\n";
     InSertTestData();
@@ -317,6 +329,7 @@ static Node* Search_SL(const string name)
 }
 static void InSert_SL(const string name, int hp, int mp, int speed, int range, const string position)
 {
+    // 연결리스트 클래스쪽을 봐주세요.
     LOLDic.append(name, hp, mp, speed, range, position);
 }
 static int Delete_SL(const string name)
@@ -326,15 +339,14 @@ static int Delete_SL(const string name)
     
     while (current) {
         if (name == current->name) {
-            if (prdv == nullptr) {
-                prdv = current->next;
-                delete current;
-                LOLDic.changehead(prdv);
-                LOLDic.Size--;
-                return 0;
-            }
-            prdv->next = current->next;
+            Node* nextNode = current->next; // 다음 노드를 미리 저장
+            if (prdv == nullptr)            // 헤드가 타겟일 때
+                LOLDic.changehead(nextNode);
+            else
+                prdv->next = nextNode;
             delete current;
+            current = nextNode;
+            LOLDic.Size--;
             return 0;
         }
         prdv = current;
@@ -347,23 +359,23 @@ static int DeleteAll_SL(const string pos)
     Node* current{ LOLDic.Head() };
     Node* prdv{ nullptr };
 
-    while (current) {
+    while (current != nullptr) {
         if (pos == current->position) {
-            if (prdv == nullptr) {
-                prdv = current->next;
-                delete current;
-                LOLDic.changehead(prdv);
-                LOLDic.Size--;
-            }
-            prdv->next = current->next;
+            Node* nextNode = current->next; // 다음 노드를 미리 저장
+            if (prdv == nullptr)            // 헤드가 타겟일 때
+                LOLDic.changehead(nextNode);
+            else
+                prdv->next = nextNode;
             delete current;
-
-            return 0;
+            current = nextNode;
+            LOLDic.Size--;
         }
-        prdv = current;
-        current = current->next;
+        else {
+            prdv = current;
+            current = current->next;
+        }
     }
-    return 1;
+    return 0;
 }
 static void PrintAll_SL()
 {
@@ -371,32 +383,38 @@ static void PrintAll_SL()
     int Num{ 1 };
 
     while (current) {
-        cout << Num++ << " ";
+        cout << setw(3) << Num++ << " ";
         current->display();
         current = current->next;
     }
 }
-static Node* FindMaxHp_SL()
+static void FindMaxHp_SL()
 {
     Node* current{ LOLDic.Head() };
-    Node* store{ current };
     int MaxHp{ numeric_limits<int>::min() };
-    bool Searched{ false };
 
     while (current) {
-        if (MaxHp >= current->hp) {
+        if (MaxHp <= current->hp) {
             MaxHp = current->hp;
-            store = current;
         }
         current = current->next;
     }
 
-    return store;
+    cout << "MaxHp : " << MaxHp << endl;
+    current = LOLDic.Head();
+    while (current) {
+        if (MaxHp == current->hp) {
+            current->display();
+        }
+        current = current->next;
+    }
+
+    return;
 }
 static void SortByHp_SL(int start, int end)
 {
-    Node* head{ LOLDic.Head() };
-    LOLDic.mergeSort(head);
+    // 연결리스트 클래스쪽을 봐주세요.
+    LOLDic.mergeSort(LOLDic.Head());
 }
 
 constexpr int MAX_LINE_LENGTH{ 256 }; // 적절한 최대 라인 길이 정의
