@@ -19,20 +19,20 @@ struct Node
     int hp{}, mp{}, speed{}, range{};
     Node* next{ nullptr };
 
-    Node(const string n, int h, int m, int s, int r, const string& p)
+    Node(const string n, int h, int m, int s, int r, const string p)
     : name(n), position(p), hp(h), mp(m), speed(s), range(r) {}
     ~Node() {}
 
     void display() const {
         setConsoleColor(COLOR_YELLOW);
-        cout << "Name: ";
+        cout << setw(8) << "Name: ";
         setConsoleColor(COLOR_DEFAULT);
-        cout << name << " | "
-            << "HP: " << hp << " | "
-            << "MP: " << mp << " | "
-            << "Speed: " << speed << " | "
-            << "Range: " << range << " | "
-            << "Position: " << position << "\n";
+        cout << setw(10) << name << " | "
+            << "HP: " << setw(5) << hp << " | "
+            << "MP: " << setw(5) << mp << " | "
+            << "Speed: " << setw(5) << speed << " | "
+            << "Range: " << setw(5) << range << " | "
+            << "Position: " << setw(8) << position << "\n";
     }
 };
 class LinkedList
@@ -73,19 +73,6 @@ public:
         }
         prdv->next = newNode;
         Size++;
-    }
-
-    void display() const {
-        Node* current = head;
-        while (current) {
-            std::cout << "Name: " << current->name << " | "
-                << "HP: " << current->hp << " | "
-                << "MP: " << current->mp << " | "
-                << "Speed: " << current->speed << " | "
-                << "Range: " << current->range << " | "
-                << "Position: " << current->position << "\n";
-            current = current->next;
-        }
     }
 
     void changehead(Node* p) {
